@@ -89,7 +89,9 @@ Jenkins -> Credentials -> Add Credentials, [http://localhost:8080/credentials/st
 ![添加钥匙串和描述文件](https://ws2.sinaimg.cn/large/006tNc79gy1fha7tvmt2uj30yg08ljrq.jpg)
 
 分别上传keychains 和 Provisioning Profile.
+
 * keychains的路径在/Users/管理员用户名/Library/keychains/login.keychain,当把这个Keychain设置好了之后，把这个Keychain拷贝到/Users/Shared/Jenkins/Library/keychains这里，(Library是隐藏文件)。
+
 * Provisioning Profiles文件在~/Library/MobileDevice/Provisioning Profiles 目录下, 这里面可能会有许多描述文件, 找到我们需要的, 上传并且拷贝到/Users/Shared/Jenkins/Library/MobileDevice文件目录下.
 
 注: 如果 Jenkins 下保存 keychain 和 Provision profile 的目录不存在可以手动创建. 我们可以邮件查看要打包工程*.xcodeproj的包内容, 查看project.pbxproj文件, 通过搜索找到描述文件的ID, 再在~/Library/MobileDevice/Provisioning Profiles文件夹中根据ID来找到具体的描述文件.
@@ -106,24 +108,171 @@ Keychain password是开机密码.
 ![Jenkins打包工程的配置](https://ws4.sinaimg.cn/large/006tNc79gy1fha9o70e7wj31kw0t4758.jpg)
 ### General
 配置一些通用的选项. 项目名称和项目描述如其字面意思一样. `GitLab connection`是源码的地址, 在外面配置好的选项, 在这里可选.
+
 * 节流构建，通过设置时间段内允许并发的次数来实现构建的控制
+
 * 丢弃旧的构建, 按需选择.
+
 * 参数化构建过程, 在Jenkins开始打包之前, 填写需要你传入的参数.
+
 * 关闭构建, 在必要的时候并发构建. 可选
 
 ## 源码管理
 
 根据自己的实际需求, 不管是SVN或者Git. 因为我使用的是Git, 在一开始安装了Git管理的插件, 所以这里选择Git.
 ![](https://ws4.sinaimg.cn/large/006tNc79gy1fhab3vad6rj30tm0f3q3d.jpg)
-1. 指定代码, 我们可以拉取指定git地址的代码. 因为分支是个变量, 它不像git地址那样一成不变, 所以最好是外部传入, 那就用到了全局环境变量. 
-2. 
+
+1. 这里的 *Credentials* 如果使用的是SSH模式, 那上面的 *Repository URL*就要使用SSH类型的地址. 如果是账号密码模式, 那上面的源码就要使用HTTP形式的地址. 两者必须保持一致.
+
+2. 指定代码, 我们可以拉取指定git地址的代码. 因为分支是个变量, 它不像git地址那样一成不变, 所以最好是外部传入, 那就用到了全局环境变量. 
+
+## 构建触发器
+
+构建触发器是设置自动化构建的地方, 如果想设置自动化构建, 例如监测到git有更新就打包, 或者每隔固定时间就打一次包.
+
+* Poll SCM (poll source code management) 轮询源码管理. 需要设置源码的路径才能起到轮询的效果。一般设置为类似结果： 0/5 每5分钟轮询一次
+
+* Build periodically (定时build) 一般设置为类似： 00 20 * 每天 20点执行定时build 。当然两者的设置都是一样可以通用的.
+
+![构建触发器](https://ws3.sinaimg.cn/large/006tNc79gy1fhfrpjn2twj31kw0cegma.jpg)
+
+## 构建环境
+
+构建环境, 主要是对构建时一些环境变量的配置. 
+![构建环境](https://ws4.sinaimg.cn/large/006tKfTcgy1fhgvjboomwj31a60eujrv.jpg)
+
+在该模块中 主要设置 xcode build 打包时需要的 keychains 和 Provision Profiles 配置文件。
+如果不配置 就会使用 xcode 自动的配置，来去系统中查找相应的配置，不过有一点需要注意,就是钥匙串中，登陆钥匙串中的证书 要复制到 系统钥匙串中，因为jenkins 访问的是系统中的钥匙串 这样在第一次打包的时候，会提示 是否授权访问钥匙串，点击始终允许就可以了。
+
+![Keychains and Code Signing Identities](https://ws1.sinaimg.cn/large/006tNc79gy1fhjnx3dnwvj31gg0jo755.jpg)
+*Keychains and Code Signing Identities* 中的选项, 因为在前面已经选择过了 * Keychain * 和 *Code Signing Identity*在前面已经填写过, 此处只用根据当前工程来选择正确的选项.
+
+![Mobile Provisioning Profiles](https://ws3.sinaimg.cn/large/006tNc79gy1fhjo37irdyj31g20hojs1.jpg)
+
+*Mobile Provisioning Profiles*由于前面已经填写过描述文件, 此处只需要选择与当前打包工程相匹配的描述文件.
+
+## 构建
+
+在这里才进入了自动化集成的关键步骤, 前面的都是一些准备工作. 我们选择*增加构建步骤*, 按照自己的实际需求, 选择打包脚本的类型. 因为Jenkins自带Shell脚本集成, 所以此处我选择*Execute shell*, 使用shell脚本来进行构建.
+
+```
+export PATH
+#######执行脚本命令#######
+rm -rf Users/Shared/Jenkins/Library/ipa/JenkinsTest/JenkinsTest.ipa
+security unlock-keychain  -p "HChong" ~/Library/Keychains/login.keychain
+sh /Users/Shared/Jenkins/Library/BuildScript/build.sh JenkinsTest 4c86cf7c8b4d00013c59b30b0c8d5e77
+fir p /Users/Shared/Jenkins/Library/ipa/JenkinsTest/JenkinsTest.ipa -T 4c86cf7c8b4d00013c59b30b0c8d5e77
+```
 
 
+shell脚本的具体内容如下
+```
+#!/bin/bash
+
+#=================项目路径配置===============
+PROJECT_PATH='/Users/Shared/Jenkins/Home/workspace/iOSPackage'
+WORKSPACE_NAME='JenkinsTest.xcworkspace'
+Archive_PATH='/Users/Shared/Jenkins/Library/archive'
+IPA_PATH='/Users/Shared/Jenkins/Library/ipa'
+PLIST_PATH='/Users/Shared/Jenkins/Home/workspace/iOSPackage/exportArchive.plist'
+
+
+#===================================脚本开始=================================================
+#使用帮助
+if [ $# == 0 ];then
+echo "===========================如何使用============================="
+echo " eg: ./build [scheme] [token] '版本描述中间不要留空格', 不传token默认用当前已经登录的fir token"
+echo " scheme list:"
+echo " JenkinsTest"
+echo " token list:"
+echo "================================================================"
+exit
+fi
+
+#update code from gitlab
+cd $PROJECT_PATH
+#git pull
+
+#update pod
+#pod install --repo-update
+#pod update
+
+#删除旧的编译目录
+APP_BUILD_LOCATION=${PROJECT_PATH}/Build/
+rm -rf ${APP_BUILD_LOCATION}
+#创建dfc目录
+
+#key auth
+security unlock-keychain "-p" "钥匙串密码" "/Users/hc/Library/Keychains/login.keychain"
+
+#创建ARCHIVE目录
+mkdir -p IPA_PATH
+#Archive_NAME = $1.xcarchive
+
+#开始打包
+cd ${PROJECT_PATH}
+pwd
+
+XCCONFIG_PATH=${PROJECT_PATH}/dfc_v2/appconfig
+
+#xcodebuild -workspace ${WORKSPACE_NAME} -scheme Enterprise -xcconfig ${XCCONFIG_PATH}/$1.xcconfig -archivePath ${Archive_PATH}/$1.xcarchive archive
+xcodebuild -workspace ${WORKSPACE_NAME} -scheme $1 -config $1 -archivePath ${Archive_PATH}/$1.xcarchive archive
+echo "--------------------------------------------"${Archive_PATH}/$1.xcarchive
+
+#创建ipa
+IPA_LOCATION=${IPA_PATH}/$1
+
+#删除旧的ipa
+rm -rf IPA_LOCATION
+mkdir -p ${IPA_PATH}/$1
+xcodebuild -exportArchive -exportOptionsPlist ${PLIST_PATH} -archivePath ${Archive_PATH}/$1.xcarchive -exportPath ${IPA_LOCATION}
+
+
+IPA_FILE_LOCATION=${IPA_PATH}/$1/$1.ipa
+
+#检查ipa是否创建成功
+if [ -f $IPA_FILE_LOCATION ]; then
+echo "ipa已经创建:"${IPA_FILE_LOCATION}
+else
+echo "打包失败"
+exit 0
+fi
+
+```
+## 构建后的操作
+
+顾名思义, 就是构建之后进行的操作. 在这里我们可以选择*Execute a set of scripts*, 通过脚本来实现构建后的操作. 常见的是将构建的结果, 上传到内测平台或者内部下载地址. 但是如果构建操作的脚本中包含有这一项, 这一个步骤也就可以忽略掉了.
 
 ## 遇到的问题
+### 找不到Fir命令
 
+![找不到Fir命令](https://ws2.sinaimg.cn/large/006tNc79gy1fhjsalg3fej31b80cewfp.jpg)
+出现如图所示的Error, 一般是由于没有安装fit-cli命令导致, 通过安装`gem install fir-cli -V --no-ri --no-rdoc`来解决. 如果提示安装成功, 但是还是报错的话, 那就在安装命令前加上`sudo`, 覆盖安装即可.
+
+### fir-cli jenkins fir:command not found
+
+这个错误是由于没有导入fir-cli安装目录导致的, 可以先在终端输入`echo $PATH`, 然后把输出结果复制下来, 在Jenkins -> 系统管理 -> 添加全局变量. 然后在工程构建步骤, 先引入全局变量`export ${PATH}`. 如果没有设置全局变量的话, 也可以直接使用`export PATH=`echo $PATH 的输出结果``
+
+![添加Path全局变量](https://ws4.sinaimg.cn/large/006tNc79gy1fhk9pyt7nsj31dg0cmwen.jpg)
+
+### 证书配置文件没有找到
+
+No iOS profile matching 'xxxxxx/xxxxxxx' found:Xcode couldn't find a profile
+matching 'xxxxxx/xxxxxxx'.
+Install the profile (by dragging and dropping it onto Xcode's dock item)
+or select a different one in the General tab of the target editor.
+Code signing is required for product type 'Application' in SDK 'iOS 10.3' 
+
+是因为Archive时没有找到profile导致的. 解决办法是, 把系统的`/Users/用户名/Library/MobileDevice/Provisioning Profiles`整个Provisioning Profiles文件夹复制到`/Users/Shared/Jenkins/Library/MobileDevice`目录下, 并且在Jenkins -> Keychains and Provisioning Profiles Management 的Provisioning Profiles Directory Path中, 设置好profile的存放目录.
+
+### Command/usr/bin/codesign failed with exit code 1
+
+这个是由于没有给钥匙串开锁权限导致, 编译之前添加 `security unlock-keychain -p "你的密码" "path to keychain/login.keychain"`解决.
 -----
 
+## 待解决
+
+使用Tomcat, 把Jenkins发布出去, 这个是下一步要解决的问题.
 参考文章:
  
 1.[iOS持续集成：jenkins+gitlab+蒲公英+邮件通知(Part 2)](https://runningyoung.github.io/2016/04/01/2016-04-05-jenkins2/)
