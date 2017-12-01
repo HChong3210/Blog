@@ -2,10 +2,11 @@
 title: JavaScript第一弹
 date: 2017-08-18 14:37:04
 tags:
-			--- JavaScript
-			--- 基础知识
+	- JavaScript
+	- 基础知识
 categories:
-	---JavaScript
+	- JavaScript
+---
 
 # JavaScript第一弹
 
@@ -104,3 +105,4 @@ console.log(carname);
 ----
 1.[Underscore - 一个JavaScript 工具库](http://www.bootcss.com/p/underscore/).
 2.[JavaScript 新手的踩坑日记](https://halfrost.com/lost_in_javascript/).
+

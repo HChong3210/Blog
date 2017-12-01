@@ -1,21 +1,28 @@
 ---
-title: 面试题拾遗系列之一UIView系列
-date: 2017-08-30 21:04:12
+title: UIView系列之---UIView和CALayer
+date: 2017-07-07 21:04:12
 tags:
     - 面试题
     - 基础知识
+    - UIView
 categories:
     - 面试题
 ---
 
-# 面试题拾遗系列之一UIView系列
+# UIView系列之---UIView和CALayer
+
+[UIView系列之---UIView和CALayer](http://hchong.net/2017/08/30/UIView%E7%B3%BB%E5%88%97%E4%B9%8B---UIView%E5%92%8CCALayer/)
+[UIView系列之---UIView的常见layout方法](http://hchong.net/2017/09/21/UIView%E7%B3%BB%E5%88%97%E4%B9%8B---UIView%E7%9A%84%E5%B8%B8%E8%A7%81layout%E6%96%B9%E6%B3%95/)
+[UIView系列之---iOS的动态高度](http://hchong.net/2017/09/24/UIView%E7%B3%BB%E5%88%97%E4%B9%8B---iOS%E7%9A%84%E5%8A%A8%E6%80%81%E9%AB%98%E5%BA%A6/)
+[UIView系列之---如何写一个自定义View](http://hchong.net/2017/09/21/UIView%E7%B3%BB%E5%88%97%E4%B9%8B---%E5%A6%82%E4%BD%95%E5%86%99%E4%B8%80%E4%B8%AA%E8%87%AA%E5%AE%9A%E4%B9%89View/)
+
 ## UIView和CALayer
 
 1. `UIView`继承自`UIResponder`, 可以相应触摸事件. 而`CALayer`继承自`NSObject`, 不能响应触摸.
 
 2. `UIView`主要是对显示内容的管理, 而`CALayer`则主要侧重显示内容的绘制. 访问`UIVIew`的与绘图和跟坐标有关的属性, 例如`frame`, `bounds`等, 实际上内部都是在访问它所包含的CALayer的相关属性. `UIView`的`frame`实际是`layer`的`frame`, `center`, `bounds`实际也是只是内部`layer`相对应属性的`get`和`set`方法, 当你改变一个`view`的`frame`的时候, 你其实改变的是内部`layer`的`frame`. CALayer的frame由`anchorPoint`, `position`, `bounds`, `transform`共同决定. `UIView`的创建, 实际上是一系列`UILayer`创建的过程.
 
-3. `UIView`有个重要属性`layer`，可以返回它的主`CALayer`实例. 所有从UIView继承来的对象都继承了这个属性. 这意味着你可以在所有的`UIVIew`子类上增加动画, 旋转, 缩放等`CALayer`支持的操作. `UIView`的`layerClass`方法, 可以返回主`layer`所使用的类, `UIView`的子类可以通过重载这个方法, 来让`UIView`使用不同的CALayer来显示. 代码示例：
+3. `UIView`有个重要属性`layer`. 可以返回它的主`CALayer`实例. 所有从UIView继承来的对象都继承了这个属性. 这意味着你可以在所有的`UIVIew`子类上增加动画, 旋转, 缩放等`CALayer`支持的操作. `UIView`的`layerClass`方法, 可以返回主`layer`所使用的类, `UIView`的子类可以通过重载这个方法, 来让`UIView`使用不同的CALayer来显示. 代码示例：
 
     ```
     - (class)layerClass {
@@ -33,7 +40,7 @@ categories:
     [self.layer addSubLayer:grayCover];
     ```
 
-5. `UIView`的内部, 有三个`layer tree`: 1.逻辑树, 这里是代码可以操纵的. 2.动画树, 是一个中间层, 系统就在这一层上通过逻辑树来更改属性, 进行各种渲染操作. 3.显示树, 其内容就是当前正被显示在屏幕上得内容。
+5. `UIView`的内部, 有三个`layer tree`: 1.逻辑树, 这里是代码可以操纵的. 2.动画树, 是一个中间层, 系统就在这一层上通过逻辑树来更改属性, 进行各种渲染操作. 3.显示树, 其内容就是当前正被显示在屏幕上得内容. 
 
 6. `UIView`实际上是`CALayer`的`CALayerDelegate`, 通过实现一系列的代理方法来显示`CALayer`绘制的内容.
 
@@ -43,16 +50,7 @@ categories:
 
 9. `UIView` 是`UIKit`框架下的(只能iOS使用). `CALayer` 是`QuartzCore`的(iOS 和macOS通用).
 
-10. `QuartzCore`的渲染能力，使二维图像可以被自由操纵, 就好像是三维的. 图像可以在一个三维坐标系中以任意角度被旋转, 缩放和倾斜. `CATransform3D`的一套方法提供了一些魔术般的变换效果. 
-
-## UIView的常见layout方法
-
-
-
-## iOS的动态高度
-
-## 自定义UIView的写法
-
+10. `QuartzCore`的渲染能力. 使二维图像可以被自由操纵, 就好像是三维的. 图像可以在一个三维坐标系中以任意角度被旋转, 缩放和倾斜. `CATransform3D`的一套方法提供了一些魔术般的变换效果. 
 
 ---------
 
@@ -62,5 +60,4 @@ categories:
 
 2.[UIView和CALayer的区别](http://blog.csdn.net/weiwangchao_/article/details/7771538)
 
-3.[Core Animation 之 CALayer](http://www.jianshu.com/p/087529c83747)
 
