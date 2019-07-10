@@ -251,7 +251,13 @@ options目前可传入参数Key在UIApplication头文件只有一个:UIApplicati
     
 5. 然后有两个category, 分别是`UINavigationController+HCModuleCore`和`UIViewController+HCModuleCore`. 分别对应push和present的情况. 因为上面已经拿到了要跳转到的页面的实例, 这里就可以通过push或者present的方法跳转过去.   
     
+## 远程调用和本地调用的区分以及安全防范
 
+远程调用和本地调用, 如果是其他APP打开本地APP可以通过设置白名单的方式, 因为每个APP的Scheme都是不同的, 如果是网络层面上劫持协议, 可以通过HTTPS的方式来防止网络劫持.
+
+## 模块间的方法调用
+
+我们可以选择对外暴露一个方法, 方法有两个参数, 一个是ModuleName, 一个是要执行的方法. 这样我们可以根据ModuleName在注册的类中找到这个类的实例, 然后通过NSInvocation来调用将要执行的方法.
 
 -------
 参考文章:

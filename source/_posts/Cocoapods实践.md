@@ -5,8 +5,7 @@ tags:
     - 基础知识
     - 模块化
 categories: 
-		- 基础知识
-		- 模块化
+    - 模块化
 ---
 
 # Cocoapods实践
@@ -386,3 +385,4 @@ CocoaPods 使用[语义版本控制 - Semantic Versioning](http://semver.org/lan
 8.[podspec官方文档](https://guides.cocoapods.org/syntax/podspec.html)
 
 9.[Podfile官方文档](https://guides.cocoapods.org/syntax/Podfile.html)
+

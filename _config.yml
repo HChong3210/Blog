@@ -3,11 +3,11 @@
 ## Source: https://github.com/hexojs/hexo/
 
 # Site
-title: 我的博客地址
-subtitle: 我就是测试一下subtitle
-description: 这是一个描述
+title: HChong的博客地址
+subtitle: Find the bug of the world!
+description: 记录一下开发过程中遇到的问题
 author: HChong
-language: zh-zh-Hans
+language: zh-CN
 timezone:
 
 # URL
@@ -38,13 +38,13 @@ post_asset_folder: false
 relative_link: false
 future: true
 highlight:
-  enable: false
+  enable: true
   line_number: false
   auto_detect: false
   tab_replace:
 
 # Category & Tag
-default_category: uncategorized
+default_category:
 category_map:
 tag_map:
 
