@@ -8,15 +8,13 @@ categories:
     - 模块化
 ---
 
-# Cocoapods实践
-
 Cocoapods是一个基于Ruby的包管理工具, 类似的还有Carthage. Cocoapods的安装在这里不在详述, 请自行百度, 在这里着重讲一下如何使用Cocoapods制作私有包, 以及Cocoapods的实现原理. 
 
-## Cocoapods的实现原理
+# 1 Cocoapods的实现原理
 
 cocoapods安装成功后, 我们怎么来使用它呢. 这里就要用到cocoapods的核心文件之一`Podfile`. Podfile 是一个文件，用于定义项目所需要使用的第三方库。该文件支持高度自定义，你可以根据个人喜好对其做出定制。[查看更多官方介绍](https://guides.cocoapods.org/syntax/Podfile.html). 
 
-### Podfile
+## 1.1 Podfile
 下面是一个🌰, 我们来挨个分析下他们背后都代表着什么.
 
 ``` Ruby
@@ -40,7 +38,7 @@ end
 
 当你写完`Podfile`之后, 就需要执行Pod的命令`pod install`, 来按照`Podfile`中的配置来配置我么你的工程
 
-### pod install
+## 1.2 pod install
 
 当运行 `pod install` 命令时会引发许多操作。要想深入了解这个命令执行的详细内容，可以在这个命令后面加上 `--verbose`来查看详细内容。现在运行这个命令 `pod install --verbose`，可以看到类似如下的内容:
 
@@ -176,7 +174,7 @@ Sending stats
 	* Writing Manifest in `Pods/Manifest.lock`
   
 
-### pod install vs pod update
+## 1.3 pod install vs pod update
 
 引用官方的文档[https://guides.cocoapods.org/using/pod-install-vs-update.html](https://guides.cocoapods.org/using/pod-install-vs-update.html)来说明一下二者的区别, 以及使用场景.
 
@@ -185,14 +183,14 @@ You will only use pod update when you want to update the version of a specific p
 * `pod install`主要用在第一次安装pods时, 如果后面你新增, 修改, 删除你的`Podfile`文件时也可以使用该命令. 每次执行`pod install`命令会把每一个安装的pod的版本写进`Podfile.lock`文件中, 来记录和lock这些已经安装Pod的版本. 当执行`Pod install`. 如果是新增Pod, 那么会搜索与Podfile中描述的匹配的版本; 如果已经存在, 他会下载`Podfile.lock`文件中明确的版本, 但不会去检查有没有可用的最新版本.
 * `pod update`会不关注`Podfile.lock`中的版本而直接更新到符合`Podfile`中定义的最新版本.
 
-## 使用CocoaPods创建私有Pod
+# 2 使用CocoaPods创建私有Pod
 
 上面我们已经介绍过如何使用CocoaPods了, 下面要讲解的就是如何创建Pod来供别人使用. 在创建私有Pod之前我们需要两个git地址:
 
 * 用来保存Spec Repo的内容的Git地址
 * 用来保存具体Pod内容的Git地址
 
-### 创建一个Spec Repo
+## 2.1 创建一个Spec Repo
 
 在这一步, 我们主要创建第一个Git地址, 并且关联到本地.
 
@@ -208,7 +206,7 @@ You will only use pod update when you want to update the version of a specific p
 
 如果你要创建私有Pod, 那么你的`Spec Repo`的远端地址就必须是私有的. 反之如果你要创建一个公有的Pod, 那么就可以使用GitHub来托管你的代码. 当你创建好远端的仓库之后, 执行`pod repo add [Spec Repo的仓库名] [Spec Repo的git地址]`来把远端的仓库clone到本地. 注意, 这里`[Spec Repo的仓库名]`不一定是远端Git仓库的名字, 而是clone到本地后, 本地文件加的名字, 但是这个名字会在后面提交`PodSpec`文件时用到.
 
-### 创建Pod工程文件
+## 2.2 创建Pod工程文件
 
 我们在你需要创建Pod的目录下使用`pod lib create [Pod名称]`来创建对应的Pod模板.  实际上该命令行隐藏了默认参数, 参数补全后应该是`pod lib create ProjectName --template-url=https://github.com/CocoaPods/pod-template.git`. 
 
@@ -251,7 +249,7 @@ $ git remote add origin [Pod的远端地址]           #添加远端仓库
 $ git push origin master     #提交到远端仓库
 ```
 
-### 编辑Pod文件
+## 2.3 编辑Pod文件
 
 Pod文件就是这个Pod要实现功能的具体逻辑, 在主工程根目录下面有一个和Pod同名的文件夹, 里面有两个子文件夹. 一个是`Assets`, 一个是`Classes`.
 
@@ -262,7 +260,7 @@ Pod文件就是这个Pod要实现功能的具体逻辑, 在主工程根目录下
 1. 当我们要使用`Pod`中的资源时, 以图片为例, 我们通过`[UIImage imageWithName:@"xxx.png"]`是取不到Pod中的图片的, 因为`imageWithName:`方法默认是从`mainBundle`中来取的, 而Pod不属于`mainBundle`的范畴, 我们需要先根据`class`来拿到当前类所在的`bundle`, 再取该`Bundle`中的资源.
 2. 每次在Pod文件夹中添加新的文件或者资源时, 都需要在根目录的Example目录下执行`pod update`命令来重新建立索引.
 
-### 编辑Podspec文件
+## 2.4 编辑Podspec文件
 
 关于`Podspec`文件[官方](http://guides.cocoapods.org/syntax/podspec.html)是这样描述的:
 
@@ -307,7 +305,7 @@ end
 ```
 
 
-### 提交Pod文件
+## 2.5 提交Pod文件
 
 Pod文件编辑好后, 我们要把代码提交到远端服务器, 我们就使用正常的方式来提交代码, 并且给代码打上Tag, * 注意, 这里的Tag必须和`Podspec`文件中的Pod版本号一致 *, 因为Podspec会根据Tag从远端来找相应的代码, 否则会出现版本和代码不匹配的现象.
 
@@ -321,13 +319,13 @@ git tag -m '备注' 版本号
 git commit -s -m '备注' 
 git push origin master —tags
 ```
-### 提交Podspec文件
+## 2.6 提交Podspec文件
 
 提交完Pod文件后, 我们只用把`Podspec`文件也提交上去, 这样就可以在Cocoapods中简历起来索引, 找到自己的Pod了. 
 
 在提交之前我们可以在根目录下使用`pod lib lint`命令来验证是否编译通过. 也可以直接提交`pod repo push [你clone到本地的Spec Repo的仓库名] [Pod名称].podspec      --use-libraries --allow-warnings --sources='[Podspec远端地址],https://github.com/CocoaPods/Specs' --verbose`
 
-### subspec的使用
+## 2.7 subspec的使用
 
 有时一个Pod太大了, 而我们又用不到全部的内容, 这时我们就可以使用subspec来解决这个问题. 我们可以在Pod文件夹中, 使用文件夹来分割各个子Pod, 然后在`Podspec`文件中这样设置:
 
@@ -344,10 +342,10 @@ git push origin master —tags
 我们也可以在各个子Pod中分别设置他们的资源路径, 对外暴露的header路径, 以及dependency.
 
 我们在外面引用该Pod的时候就可以使用`pod [Pod/子Pod]`的方式来只引用一个子Pod. 
-## cocoapods的相关知识
+# 3 cocoapods的相关知识
 
 这里是CocoaPods的其他相关知识, 做一个备忘.
-### Pod的版本说明
+## 3.1 Pod的版本说明
 CocoaPods 使用[语义版本控制 - Semantic Versioning](http://semver.org/lang/zh-CN/)命名约定来解决对版本的依赖. 常见的版本说明符号有以下这些.
 
 *	= 0.1 Version 0.1.
@@ -357,7 +355,7 @@ CocoaPods 使用[语义版本控制 - Semantic Versioning](http://semver.org/lan
 *	<= 0.1 Version 0.1 and any lower version.
 *	~> 0.1.2 Version 0.1.2 and the versions up to 0.2, not including 0.2. 
 
-### 常见Pod依赖的几种写法
+## 3.2 常见Pod依赖的几种写法
 
 * pod 'AFNetworking', :configurations => ['Debug', ‘Beta']
 * pod 'QueryKit/Attribute'

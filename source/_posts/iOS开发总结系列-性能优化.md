@@ -117,4 +117,6 @@ t2 = main方法执行之后到AppDelegate类中的`- (BOOL)Application:(UIApplic
 
 3.[iOS-Performance-Optimization](https://github.com/skyming/iOS-Performance-Optimization)
 
+4.[Archive、ipa 和 App 包瘦身](https://juejin.im/entry/5d61559e5188253cf525cc2c)
+
 
